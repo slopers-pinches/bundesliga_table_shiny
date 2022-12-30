@@ -21,11 +21,11 @@ When generated the table shows standings of the current match day. For each team
 
 All rows are expandable. By clicking on the little arrow at the beginning of each row we open a new table that displays all the previous matches of the chosen team. You can see their opponent, whether they played home or away, the final score and the date of the match. At the beginning of each row, there's a little colored circle, which allows you to see whether the team won, lost or drew based on the color (green, red, grey, respectively).
 
-![Expandable Table](images/BL%20Expandable%20Rows.gif){width="800"}
+![Expandable Table](images/BL%20Expandable%20Rows.gif)
 
 The table also allows you to "travel in time" by using the slider above. The slider allows you to pick any of the previous match days and see the league standings back then.
 
-![Matchday Slider](images/BL%20Matchday%20Slider.gif){width="800"}
+![Matchday Slider](images/BL%20Matchday%20Slider.gif)
 
 ## Data
 
