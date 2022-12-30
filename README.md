@@ -6,7 +6,7 @@ Personally, I love sports and play around with data. I decided to present the da
 
 ![](images/BL%20Screenshot.png)
 
-#### **About the Bundesliga**
+### **About the Bundesliga**
 
 If you are not a football/soccer fan, the concepts could be confusing, but let me briefly explain it! The Bundesliga was founded in 1963 and each year consists of 18 top football teams in England. Seasons run from August to May and consist of 34 match days as each team is playing 34 matches in order to play other 17 teams both home and away. During the season the teams are collecting points. A win gets them 3 points, a draw is worth 1 point and a loss means 0 points. The goals scored and goals conceded also matter. According to the Bundesliga's rules, the final standings table is sorted by number of points received, goal difference and number of goals scored.
 
