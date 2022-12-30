@@ -31,7 +31,7 @@ The table also allows you to "travel in time" by using the slider above. The sli
 
 ## Data
 
-In order to get the latest data, I use [Football-Data.org API](https://www.football-data.org/). You need to create an account to get the API token which is free. When running the app, the scripts except a `_config.R` file to get the API token. In the file, my API token is stored as a variable called `auth_token`. I did not include this file in the repository.
+In order to get the latest data, I use [Football-Data.org API](https://www.football-data.org/). You need to create an account to get the API token which is free. When running the app, the scripts expect a `_config.R` file to get the API token. In the file, my API token is stored as a variable called `auth_token`. I did not include this file in the repository.
 
 #### Requirements
 
