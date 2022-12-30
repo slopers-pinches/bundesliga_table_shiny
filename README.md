@@ -4,7 +4,7 @@
 
 Personally, I love sports and play around with data. I decided to present the data from the current season of the [Bundesliga](https://www.bundesliga.com/en/bundesliga). I created an interactive Shiny app, which displays the current standings table and allows the user to check each team's previous matches, as well as check the standings in the previous match days of the season. The app is deployed on shinyapps.io and can be accessed [here](https://slopers-pinches.shinyapps.io/Bundesliga-Table-Standing/).
 
-![](images/BL%20Screenshot.png)
+![](images/BL%20Screenshot.png){width="1500"}
 
 ### **About the Bundesliga**
 
@@ -23,11 +23,11 @@ When generated the table shows standings of the current match day. For each team
 
 All rows are expandable. By clicking on the little arrow at the beginning of each row we open a new table that displays all the previous matches of the chosen team. You can see their opponent, whether they played home or away, the final score and the date of the match. At the beginning of each row, there's a little colored circle, which allows you to see whether the team won, lost or drew based on the color (green, red, grey, respectively).
 
-![Expandable Table](images/BL%20Expandable%20Rows.gif)
+![Expandable Table](images/BL%20Expandable%20Rows.gif){width="1500"}
 
 The table also allows you to "travel in time" by using the slider above. The slider allows you to pick any of the previous match days and see the league standings back then.
 
-![Matchday Slider](images/BL%20Matchday%20Slider.gif)
+![Matchday Slider](images/BL%20Matchday%20Slider.gif){width="1500"}
 
 ## Data
 
