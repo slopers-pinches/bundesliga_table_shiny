@@ -1,3 +1,4 @@
+# Load libraries
 library(shiny)
 library(httr)
 library(reactable)
@@ -9,7 +10,6 @@ library(dplyr)
 
 ## Load functions, variables, credentials --------------------------------------
 source("_config.R", local = TRUE)
-
 source("_ui.R", local = TRUE)
 source("_server.R", local = TRUE)
 
@@ -17,11 +17,11 @@ source("_server.R", local = TRUE)
 ## Prepare everything, run shiny -----------------------------------------------
 
 # Parameters
-api_url <- "https://api.football-data.org/v2/competitions/PL/"
-n_match_days <- 38
+api_url <- "https://api.football-data.org/v4/competitions/BL1/"
+n_match_days <- 34
 
-# Get current match day
-standings_api <- GET(paste0(api_url, "standings?season=2021"),
+# Get current season and its match day 
+standings_api <- GET(paste0(api_url, "standings?season=2022"),
                      add_headers("X-Auth-Token" = auth_token)
 )
 cur_match_day <- content(standings_api)$season$currentMatchday
@@ -29,13 +29,13 @@ cur_match_day <- content(standings_api)$season$currentMatchday
 # Run shiny app
 ui <- fluidPage(
     id = 'test',
-    tags$head(tags$title("Premier League standings")),
+    tags$head(tags$title("Bundesliga Standings")),
     tags$style(HTML(build_css(n_match_days, cur_match_day))),
     
-    titlePanel(h1("Premier League standings", align = "center",
-                  style = paste0("color:", purple))),
+    titlePanel(h1("Bundesliga Standings", align = "center",
+                  style = paste0("color:", red))),
     
-    h4("Season 2021/22", align = "center"),
+    h4("Season 2022/23", align = "center"),
     h5(paste0("Current match day: ", cur_match_day), align = "center"),
     
     fluidRow(
@@ -71,19 +71,19 @@ server <- function(input, output) {
     all_standings <- get_all_standings_tables(teams_matches, cur_match_day)
     
     observeEvent(input$matchday, {
-        PL_table_df <- all_standings[[input$matchday]]
+        BL_table_df <- all_standings[[input$matchday]]
         
-        prev <- PL_table_df$prev
-        PL_table_df$prev <- NULL
+        prev <- BL_table_df$prev
+        BL_table_df$prev <- NULL
         
-        PL_table_df$goals_scored <- NULL
+        BL_table_df$goals_scored <- NULL
         
         output$table <- renderReactable({
-            reactable(PL_table_df,
+            reactable(BL_table_df,
                       defaultColDef =
                           colDef(vAlign = "center",
                                  style = list(fontWeight = "bold",
-                                              color = purple),
+                                              color = red),
                                  headerStyle = list(fontWeight = "normal",
                                                     fontSize=12)
                           ),
@@ -131,24 +131,24 @@ server <- function(input, output) {
                                          div(value, title="Goal difference")
                                      }),
                           won =
-                              stats_col(min(PL_table_df$won),
-                                        max(PL_table_df$won),
+                              stats_col(min(BL_table_df$won),
+                                        max(BL_table_df$won),
                                         cell_class = "spi-rating rating-win",
                                         name = "W",
                                         header = function(value, name) {
                                             div(value, title="Number of wins")
                                         }),
                           draw =
-                              stats_col(min(PL_table_df$draw),
-                                        max(PL_table_df$draw),
+                              stats_col(min(BL_table_df$draw),
+                                        max(BL_table_df$draw),
                                         cell_class = "spi-rating rating-draw",
                                         name = "D",
                                         header = function(value, name) {
                                             div(value, title="Number of draws")
                                         }),
                           lost =
-                              stats_col(min(PL_table_df$lost),
-                                        max(PL_table_df$lost),
+                              stats_col(min(BL_table_df$lost),
+                                        max(BL_table_df$lost),
                                         cell_class = "spi-rating rating-lose",
                                         name = "L", class = "border-right",
                                         header = function(value, name) {
@@ -166,7 +166,7 @@ server <- function(input, output) {
                       sortable = FALSE,
                       details = function (index) {
                           sub_table(index, input$matchday, teams_matches,
-                                    PL_table_df)
+                                    BL_table_df)
                       }
             )
         })
@@ -174,5 +174,3 @@ server <- function(input, output) {
     
 }
 shinyApp(ui, server)
-
-

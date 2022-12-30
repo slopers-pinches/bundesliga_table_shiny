@@ -1,3 +1,4 @@
+# Pulling Football Data API Auth Token
 source("_config.R", local = TRUE)
 
 ## Functions -------------------------------------------------------------------
@@ -11,11 +12,11 @@ get_teams_matches <- function(api_url) {
     #' 
     #' @param api_url General api url.
     #' 
-    #' @return Named list of data frames, where names are PL team names. Each
+    #' @return Named list of data frames, where names are BL team names. Each
     #' data frame stores past matches for a particular team: date, home/away
     #' team, goals scored/received, final result.
     
-    matches_api <- GET(paste0(api_url, "matches?season=2021"),
+    matches_api <- GET(paste0(api_url, "matches?season=2022"),
                        add_headers("X-Auth-Token" = auth_token)
     )
     
@@ -37,8 +38,9 @@ get_teams_matches <- function(api_url) {
             result_away <- "win"
         }
         
-        home_team_goals <- tmp_match$score$fullTime$homeTeam
-        away_team_goals <- tmp_match$score$fullTime$awayTeam
+        # Updating b/c using football-data.org API v4
+        home_team_goals <- tmp_match$score$fullTime$home
+        away_team_goals <- tmp_match$score$fullTime$away
         
         match_df <- data.frame("result" = "",
                                "home" = tmp_match$homeTeam$name,
@@ -52,14 +54,11 @@ get_teams_matches <- function(api_url) {
         match_df$result <- result_home
         match_df$goals_scored <- home_team_goals
         match_df$goals_received <- away_team_goals
-        team_matches[[tmp_match$homeTeam$name]] <-
-            rbind(match_df, team_matches[[tmp_match$homeTeam$name]])
-        
+        team_matches[[tmp_match$homeTeam$name]] <- rbind(match_df, team_matches[[tmp_match$homeTeam$name]])
         match_df$result <- result_away
         match_df$goals_scored <- away_team_goals
         match_df$goals_received <- home_team_goals
-        team_matches[[tmp_match$awayTeam$name]] <-
-            rbind(match_df, team_matches[[tmp_match$awayTeam$name]])
+        team_matches[[tmp_match$awayTeam$name]] <- rbind(match_df, team_matches[[tmp_match$awayTeam$name]])
     }
     
     team_matches
@@ -73,7 +72,7 @@ get_all_standings_tables <- function(team_matches, cur_match_day) {
     #' 
     #' @param team_matches Named list storing data frames of each team's
     #' matches.
-    #' @param cur_match_day Integer, current match day. Value from 1 to 38.
+    #' @param cur_match_day Integer, current match day. Value from 1 to 34.
     #' 
     #' @return List of data frames (standing tables), where the list index
     #' corresponds to the match day of the standings table it contains.
@@ -93,12 +92,14 @@ build_standings_table <- function(team_matches, match_day, all_standings) {
     #' Calculate number of points for each team, their goal difference, number
     #' of wins/loses/draws, number of matches played. Also compare their current
     #' position with the previous one (if it exists). Sort the table first by
-    #' the number of points, then by goal difference (PL sorting rules:
-    #' https://www.premierleague.com/premier-league-explained).
+    #' the number of points, then by goal difference (BL sorting rules:
+    #' shorturl.at/jrxK7).
     #' 
     #' @param team_matches Named list storing data frames of each team's
     #' matches.
-    #' @param match_day Integer, match day. Value from 1 to 38.
+    #' 
+    #' @param match_day Integer, match day. Value from 1 to 34.
+    #' 
     #' @param all_standings List of data frames (standing tables), where the
     #' list index corresponds to the match day of the standings table it
     #' contains.
@@ -106,7 +107,7 @@ build_standings_table <- function(team_matches, match_day, all_standings) {
     #' @return List of data frames (standing tables), where the list index
     #' corresponds to the match day of the standings table it contains.
     
-    PL_table <- NULL
+    BL_table <- NULL
     
     for(team in names(team_matches)) {
         tmp <- tail(team_matches[[team]], match_day)
@@ -115,7 +116,7 @@ build_standings_table <- function(team_matches, match_day, all_standings) {
         tmp$result <- factor(tmp$result, levels = c("win", "lose", "draw"))
         results <- table(tmp$result)
         
-        PL_table <- rbind(PL_table,
+        BL_table <- rbind(BL_table,
                           data.frame(position = NA,
                                      team = team,
                                      played = sum(results),
@@ -129,16 +130,16 @@ build_standings_table <- function(team_matches, match_day, all_standings) {
         
     }
     
-    # Sort according to PL rules, get position
-    PL_table <- PL_table[with(PL_table,
+    # Sort according to BL_table, get position
+    BL_table <- BL_table[with(BL_table,
                               order(-points, -goal_diff, -goals_scored)), ]
-    PL_table$position <- 1:nrow(PL_table)
+    BL_table$position <- 1:nrow(BL_table)
     
     
     if (match_day == 1) {
         # On the first match day there is no previous positions
         prev_table <- NULL
-    } else if (max(PL_table$played) != match_day & match_day != 2) {
+    } else if (max(BL_table$played) != match_day & match_day != 2) {
         # If there were no matches played in the current match day just yet,
         # we compare to two match days before
         prev_table <- all_standings[[match_day - 2]]
@@ -147,9 +148,9 @@ build_standings_table <- function(team_matches, match_day, all_standings) {
         # match day
         prev_table <- all_standings[[match_day - 1]]
     }
-    PL_table$prev <- compare_with_prev_position(PL_table$team, prev_table)
+    BL_table$prev <- compare_with_prev_position(BL_table$team, prev_table)
     
-    PL_table
+    BL_table
 }
 
 calculate_pts <- function(results) {
@@ -171,7 +172,9 @@ scale_vals <- function(val, min_val, max_val) {
     #' @description Scale value: (val - min_val) / (max_val - min_val).
     #' 
     #' @param val Value of interest.
+    #' 
     #' @param min_val Minimum value.
+    #' 
     #' @param max_val Maximum value.
     #' 
     #' @return Scaled value.
@@ -187,10 +190,15 @@ stats_col <- function(min_val, max_val, cell_class,
     #' number of wins, draws, losses.
     #' 
     #' @param min_val Minimum value.
+    #' 
     #' @param max_val Maximum value.
+    #' 
     #' @param cell_cass Value of interest.
+    #' 
     #' @param maxWidth Maximum width of column.
+    #' 
     #' @param align Column alignment, e.g. "center".
+    #' 
     #' @param ... Other arguments for colDef.
     #' 
     #' @return Generated column definition.
@@ -208,21 +216,24 @@ stats_col <- function(min_val, max_val, cell_class,
            }, ...)
 }
 
-sub_table <- function(ix, match_day, team_matches, PL_table_df) {
+sub_table <- function(ix, match_day, team_matches, BL_table_df) {
     #' Create sub table
     #'
     #' @description Create a table of matches for a team given a standings
     #' table of the chosen match day.
     #' 
     #' @param ix Index/team position of the team in interest.
-    #' @param match_day Current match day, integer from 1 to 38.
+    #' 
+    #' @param match_day Current match day, integer from 1 to 34.
+    #' 
     #' @param team_matches Named list storing data frames of each team's
     #' matches.
-    #' @param PL_table_df Data frame, the standings table.
+    #' 
+    #' @param BL_table_df Data frame, the standings table.
     #' 
     #' @return Generated column definition.
     
-    team_name <- PL_table_df$team[ix]
+    team_name <- BL_table_df$team[ix]
     
     # Get team history given a match day of interest
     team_hist <- team_matches[[team_name]]
@@ -261,14 +272,13 @@ sub_table <- function(ix, match_day, team_matches, PL_table_df) {
                                      }),
                       position =
                           colDef(name = "POS", maxWidth = 50)),
-                  theme = reactableTheme(
-                      backgroundColor = sub_table_background),
-                  sortable = FALSE,
-                  outlined = TRUE,
-                  showPageInfo = FALSE,
-                  showPageSizeOptions = TRUE,
-                  defaultPageSize = 10))
-    
+                  theme = reactableTheme(backgroundColor = sub_table_background),
+                                          sortable = FALSE,
+                                          outlined = TRUE,
+                                          showPageInfo = FALSE,
+                                          showPageSizeOptions = TRUE,
+                                          defaultPageSize = 10))
+
 }
 
 compare_with_prev_position <- function(ordered_teams, prev_table) {
@@ -279,6 +289,7 @@ compare_with_prev_position <- function(ordered_teams, prev_table) {
     #' current position is better, equal, or worse than the previous one.
     #' 
     #' @param ordered_teams Vector of team names, ordered by position.
+    #' 
     #' @param prev_table Data frame, the previous standings table.
     #' 
     #' @return Position comparison vector with 3 possible values: "up", "down",
