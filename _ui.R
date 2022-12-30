@@ -1,6 +1,6 @@
 ## Colors ----------------------------------------------------------------------
 
-purple <- "#38003c"
+red <- "#2D1712"
 black <- "#000000"
 
 # Spinner
@@ -91,6 +91,7 @@ build_css <- function(n_match_days, cur_match_day) {
     #' @description Build a CSS string for the table.
     #' 
     #' @param n_match_days Total number of match days.
+    #' 
     #' @param cur_match_day Integer, current match day. Value from 1 to
     #' n_match_days.
     #' 
@@ -116,9 +117,9 @@ build_css <- function(n_match_days, cur_match_day) {
         }
         
         .js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {
-            background: ", purple, ";
-            border-top: 1px solid , ", purple, ";
-            border-bottom: 1px solid ", purple, ";
+            background: ", red, ";
+            border-top: 1px solid , ", red, ";
+            border-bottom: 1px solid ", red, ";
         }
         
         .irs-grid-pol.small {
@@ -161,7 +162,7 @@ build_css <- function(n_match_days, cur_match_day) {
     ")
     
     # Different color for disabled ticks in the slider.
-    ticks_step <- round(n_match_days / 10)
+    ticks_step <- round(n_match_days / 2)
     ticks <- seq(1, n_match_days, by = ticks_step)
     if (!n_match_days %in% ticks) ticks <- c(ticks, n_match_days)
     
@@ -187,7 +188,7 @@ stats_col_style <- function(scaled_val) {
     
     if (is.nan(scaled_val)) scaled_val <- 1
     color <- stats_col_background_palette(scaled_val)
-    list(background = color, fontWeight = "bold", color = purple)
+    list(background = color, fontWeight = "bold", color = red)
 }
 
 stats_col_background_palette <- function(x) {
@@ -211,13 +212,14 @@ teamname_style <- function(value, team_name) {
     #' Otherwise make it black and set font weight to normal.
     #' 
     #' @param value Team name belonging to the current sub table.
+    
     #' @param team_name Team name displayed in the sub table's row.
     #' 
     #' @return List with chosen style parameters: color, font weight,
     #' font size of 12.
     
     if (value == team_name) {
-        color <- purple
+        color <- red
         fontweight <- "bold"
     } else {
         color <- black
@@ -236,8 +238,9 @@ get_team_img <- function(team) {
     #' 
     #' @return A tag list with team's logo.
     
-    image <- img(src = paste0(gsub(" ", "", team, fixed = TRUE), ".svg"),
+    image <- img(src = paste0(team, ".svg"),
                  height = "24px", alt = team)
+    
     tagList(div(style = list(display = "inline-block", width = "45px"), image),
             team)
 }
@@ -269,12 +272,19 @@ matchday_slider <- function(inputId, label, min, max, value, step = NULL,
     #' @description 
     #' 
     #' @param inputId Slider inputId.
+    
     #' @param label Slider label.
+    
     #' @param min Integer, min slider value.
+    
     #' @param max Integer, max slider value.
+    
     #' @param value Integer, default slider value.
+    
     #' @param step Integer, slider step size.
+    
     #' @param from_min Integer, min selectable slider value.
+    
     #' @param from_max Integer, max selectable slider value.
     #' 
     #' @return Shiny slider input modified based on our parameters.
